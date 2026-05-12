@@ -1,42 +1,87 @@
-name: Update D-day image
+from pathlib import Path
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
+from PIL import Image, ImageDraw, ImageFont
 
-on:
-  schedule:
-    - cron: "19 15 * * *"
-  workflow_dispatch:
+# =====================
+# 1. 행사 목록
+# =====================
 
-permissions:
-  contents: write
+events = [
+    {"title": "순천향대", "date": date(2026, 5, 13), "filename": "soonchunhyang.png"},
+    {"title": "남서울대", "date": date(2026, 5, 13), "filename": "namseoul.png"},
+    {"title": "성균관대", "date": date(2026, 5, 14), "filename": "skku.png"},
+    {"title": "단국대 죽전캠", "date": date(2026, 5, 14), "filename": "dankook_jukjeon.png"},
+    {"title": "홍익대 서울캠", "date": date(2026, 5, 15), "filename": "hongik_seoul.png"},
+    {"title": "광운대", "date": date(2026, 5, 15), "filename": "kwangwoon.png"},
+    {"title": "한밭대", "date": date(2026, 5, 19), "filename": "hanbat.png"},
+    {"title": "카이스트", "date": date(2026, 5, 19), "filename": "kaist.png"},
+    {"title": "한남대", "date": date(2026, 5, 19), "filename": "hannam.png"},
+    {"title": "세종대", "date": date(2026, 5, 20), "filename": "sejong.png"},
+    {"title": "상명대", "date": date(2026, 5, 21), "filename": "sangmyung.png"},
+    {"title": "중앙대", "date": date(2026, 5, 21), "filename": "chungang.png"},
+    {"title": "전남드래곤즈구장", "date": date(2026, 5, 22), "filename": "jeonnam_dragons.png"},
+    {"title": "하노이 케팝 워터 뮤직 페스티벌", "date": date(2026, 6, 6), "filename": "hanoi.png"},
+]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+# =====================
+# 2. 이미지 설정
+# =====================
 
-jobs:
-  update-dday:
-    runs-on: ubuntu-latest
+width, height = 300, 105
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+# 한국시간 기준 "오늘"
+today = datetime.now(ZoneInfo("Asia/Seoul")).date()
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+# GitHub Actions용 폰트
+noto_font = Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc")
+dejavu_font = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
 
-      - name: Install Pillow and fonts
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y fonts-noto-cjk
-          pip install pillow
+if noto_font.exists():
+    font_path = str(noto_font)
+else:
+    font_path = str(dejavu_font)
 
-      - name: Generate D-day images
-        run: python make_dday.py
+dday_font = ImageFont.truetype(font_path, 58)
+date_font = ImageFont.truetype(font_path, 24)
 
-      - name: Commit updated images
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add *.png
-          git commit -m "Update dday images" || echo "No changes to commit"
-          git push
+# =====================
+# 3. 함수
+# =====================
+
+def get_dday_text(target_date):
+    diff = (target_date - today).days
+
+    if diff > 0:
+        return f"D-{diff}"
+    elif diff == 0:
+        return "D-DAY"
+    else:
+        return "END"
+
+def center_text(draw, text, font, y, fill):
+    bbox = draw.textbbox((0, 0), text, font=font)
+    text_width = bbox[2] - bbox[0]
+    x = (width - text_width) // 2
+    draw.text((x, y), text, font=font, fill=fill)
+
+# =====================
+# 4. 행사별 PNG 생성
+# =====================
+
+for event in events:
+    img = Image.new("RGB", (width, height), "white")
+    draw = ImageDraw.Draw(img)
+
+    target_date = event["date"]
+    dday_text = get_dday_text(target_date)
+    date_text = target_date.strftime("%m.%d")
+
+    # 위치 조정
+    center_text(draw, dday_text, dday_font, 6, "red")
+    center_text(draw, date_text, date_font, 68, "black")
+
+    img.save(event["filename"])
+    print(f'{event["filename"]} 생성 완료 -> {dday_text} / {date_text}')
+
+print("모든 D-day 이미지 생성 완료")
