@@ -1,0 +1,36 @@
+name: Update D-day image
+
+on:
+  schedule:
+    - cron: "0 15 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-dday:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Pillow
+        run: pip install pillow
+
+      - name: Generate D-day image
+        run: python make_dday.py
+
+      - name: Commit updated image
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add dday.png
+          git commit -m "Update dday image" || echo "No changes to commit"
+          git push
