@@ -24,16 +24,19 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Pillow
-        run: pip install pillow
+      - name: Install Pillow and fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk
+          pip install pillow
 
-      - name: Generate D-day image
+      - name: Generate D-day images
         run: python make_dday.py
 
-      - name: Commit updated image
+      - name: Commit updated images
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add dday.png
-          git commit -m "Update dday image" || echo "No changes to commit"
+          git add *.png
+          git commit -m "Update dday images" || echo "No changes to commit"
           git push
