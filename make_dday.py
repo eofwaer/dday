@@ -74,8 +74,8 @@ for event in events:
     dday_text = get_dday_text(target_date)
     date_text = target_date.strftime("%m.%d")
 
-    center_text(draw, dday_text, dday_font, 18, "red")
-    center_text(draw, date_text, date_font, 82, "black")
+    center_text(draw, dday_text, dday_font, 8, "red")
+    center_text(draw, date_text, date_font, 74, "black")
 
     img.save(event["filename"])
     print(f'{event["filename"]} 생성 완료 -> {dday_text} / {date_text}')
