@@ -19,6 +19,7 @@ events = [
     {"title": "한남대", "date": date(2026, 5, 19), "filename": "hannam.png"},
     {"title": "세종대", "date": date(2026, 5, 20), "filename": "sejong.png"},
     {"title": "상명대", "date": date(2026, 5, 21), "filename": "sangmyung.png"},
+    {"title": "중앙대", "date": date(2026, 5, 21), "filename": "chungang.png"},
     {"title": "전남드래곤즈구장", "date": date(2026, 5, 22), "filename": "jeonnam_dragons.png"},
     {"title": "하노이 케팝 워터 뮤직 페스티벌", "date": date(2026, 6, 6), "filename": "hanoi.png"},
 ]
