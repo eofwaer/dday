@@ -8,20 +8,20 @@ from PIL import Image, ImageDraw, ImageFont
 # =====================
 
 events = [
-    {"title": "상지대", "date": date(2026, 5, 14), "filename": "sangji.png"},
-    {"title": "순천향대", "date": date(2026, 5, 15), "filename": "soonchunhyang.png"},
-    {"title": "남서울대", "date": date(2026, 5, 16), "filename": "namseoul.png"},
-    {"title": "성균관대", "date": date(2026, 5, 16), "filename": "skku.png"},
-    {"title": "단국대 죽전캠", "date": date(2026, 5, 17), "filename": "dankook_jukjeon.png"},
-    {"title": "홍익대 서울캠", "date": date(2026, 5, 17), "filename": "hongik_seoul.png"},
-    {"title": "광운대", "date": date(2026, 5, 18), "filename": "kwangwoon.png"},
+    {"title": "상지대", "date": date(2026, 5, 12), "filename": "sangji.png"},
+    {"title": "순천향대", "date": date(2026, 5, 13), "filename": "soonchunhyang.png"},
+    {"title": "남서울대", "date": date(2026, 5, 13), "filename": "namseoul.png"},
+    {"title": "성균관대", "date": date(2026, 5, 14), "filename": "skku.png"},
+    {"title": "단국대 죽전캠", "date": date(2026, 5, 14), "filename": "dankook_jukjeon.png"},
+    {"title": "홍익대 서울캠", "date": date(2026, 5, 15), "filename": "hongik_seoul.png"},
+    {"title": "광운대", "date": date(2026, 5, 15), "filename": "kwangwoon.png"},
     {"title": "한밭대", "date": date(2026, 5, 19), "filename": "hanbat.png"},
     {"title": "카이스트", "date": date(2026, 5, 19), "filename": "kaist.png"},
     {"title": "한남대", "date": date(2026, 5, 19), "filename": "hannam.png"},
     {"title": "세종대", "date": date(2026, 5, 20), "filename": "sejong.png"},
-    {"title": "상명대", "date": date(2026, 5, 20), "filename": "sangmyung.png"},
-    {"title": "중앙대", "date": date(2026, 5, 21), "filename": "chungang.png"},
-    {"title": "전남드래곤즈구장", "date": date(2026, 5, 24), "filename": "jeonnam_dragons.png"},
+    {"title": "상명대", "date": date(2026, 5, 21), "filename": "sangmyung.png"},
+    {"title": "전남드래곤즈구장", "date": date(2026, 5, 22), "filename": "jeonnam_dragons.png"},
+    {"title": "하노이 케팝 워터 뮤직 페스티벌", "date": date(2026, 6, 6), "filename": "hanoi.png"},
 ]
 
 # =====================
