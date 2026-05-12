@@ -4,7 +4,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 # =====================
 # 1. 행사 목록
-# 날짜는 내가 임시로 채운 값
 # =====================
 
 events = [
@@ -28,10 +27,10 @@ events = [
 # 2. 이미지 설정
 # =====================
 
-width, height = 500, 120
+width, height = 300, 120
 today = date.today()
 
-# GitHub Actions(우분투)에서 쓸 폰트
+# GitHub Actions용 한글 폰트
 noto_font = Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc")
 dejavu_font = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
 
@@ -40,9 +39,8 @@ if noto_font.exists():
 else:
     font_path = str(dejavu_font)
 
-title_font = ImageFont.truetype(font_path, 24)
-dday_font = ImageFont.truetype(font_path, 48)
-date_font = ImageFont.truetype(font_path, 18)
+dday_font = ImageFont.truetype(font_path, 58)
+date_font = ImageFont.truetype(font_path, 24)
 
 # =====================
 # 3. 함수
@@ -56,7 +54,7 @@ def get_dday_text(target_date):
     elif diff == 0:
         return "D-DAY"
     else:
-        return "이미 지난 일정"
+        return "END"
 
 def center_text(draw, text, font, y, fill):
     bbox = draw.textbbox((0, 0), text, font=font)
@@ -72,16 +70,14 @@ for event in events:
     img = Image.new("RGB", (width, height), "white")
     draw = ImageDraw.Draw(img)
 
-    title = event["title"]
     target_date = event["date"]
-    date_text = target_date.strftime("%Y-%m-%d")
     dday_text = get_dday_text(target_date)
+    date_text = target_date.strftime("%m.%d")
 
-    center_text(draw, title, title_font, 10, "black")
-    center_text(draw, dday_text, dday_font, 38, "red")
-    center_text(draw, date_text, date_font, 92, "black")
+    center_text(draw, dday_text, dday_font, 18, "red")
+    center_text(draw, date_text, date_font, 82, "black")
 
     img.save(event["filename"])
-    print(f'{event["filename"]} 생성 완료 -> {dday_text}')
+    print(f'{event["filename"]} 생성 완료 -> {dday_text} / {date_text}')
 
 print("모든 D-day 이미지 생성 완료")
