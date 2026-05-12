@@ -1,5 +1,6 @@
 from pathlib import Path
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from PIL import Image, ImageDraw, ImageFont
 
 # =====================
@@ -7,7 +8,6 @@ from PIL import Image, ImageDraw, ImageFont
 # =====================
 
 events = [
-    {"title": "상지대", "date": date(2026, 5, 12), "filename": "sangji.png"},
     {"title": "순천향대", "date": date(2026, 5, 13), "filename": "soonchunhyang.png"},
     {"title": "남서울대", "date": date(2026, 5, 13), "filename": "namseoul.png"},
     {"title": "성균관대", "date": date(2026, 5, 14), "filename": "skku.png"},
@@ -28,10 +28,12 @@ events = [
 # 2. 이미지 설정
 # =====================
 
-width, height = 300, 120
-today = date.today()
+width, height = 300, 105
 
-# GitHub Actions용 한글 폰트
+# 한국시간 기준 오늘 날짜
+today = datetime.now(ZoneInfo("Asia/Seoul")).date()
+
+# GitHub Actions용 폰트
 noto_font = Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc")
 dejavu_font = Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
 
@@ -75,8 +77,8 @@ for event in events:
     dday_text = get_dday_text(target_date)
     date_text = target_date.strftime("%m.%d")
 
-    center_text(draw, dday_text, dday_font, 8, "red")
-    center_text(draw, date_text, date_font, 74, "black")
+    center_text(draw, dday_text, dday_font, 6, "red")
+    center_text(draw, date_text, date_font, 68, "black")
 
     img.save(event["filename"])
     print(f'{event["filename"]} 생성 완료 -> {dday_text} / {date_text}')
