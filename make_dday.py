@@ -21,7 +21,11 @@ events = [
     {"title": "상명대", "date": date(2026, 5, 21), "filename": "sangmyung.png"},
     {"title": "중앙대", "date": date(2026, 5, 21), "filename": "chungang.png"},
     {"title": "전남드래곤즈구장", "date": date(2026, 5, 22), "filename": "jeonnam_dragons.png"},
+    {"title": "경희대", "date": date(2026, 5, 28), "filename": "kyunghee.png"},
     {"title": "하노이 케팝 워터 뮤직 페스티벌", "date": date(2026, 6, 6), "filename": "hanoi.png"},
+    {"title": "멤버십 판매 종료", "date": date(2026, 5, 26), "filename": "membership_end.png"},
+    {"title": "울산 뮤직 페스티벌", "date": date(2026, 6, 15), "filename": "ulsan_music_festival.png"},
+    {"title": "뮤지컬 헬스키친", "date": date(2026, 7, 28), "filename": "hells_kitchen.png"},
 ]
 
 # =====================
