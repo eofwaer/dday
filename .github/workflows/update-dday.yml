@@ -2,7 +2,7 @@ name: Update D-day image
 
 on:
   schedule:
-    - cron: "19 15 * * *"
+    - cron: "9 15 * * *"
   workflow_dispatch:
 
 permissions:
