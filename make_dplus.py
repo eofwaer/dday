@@ -7,11 +7,11 @@ import os
 # =========================================================
 # 기본 설정
 # =========================================================
-BASE_DATE = date(2026, 5, 17)   # 아래 base_count 값들이 이 날짜 기준
+
 TIMEZONE = "Asia/Seoul"
 
-OUTPUT_DIR = Path(".")          # 현재 폴더에 png 저장
-REPORT_DIR = Path(".")          # txt 보고서 저장 위치
+OUTPUT_DIR = Path(".")
+REPORT_DIR = Path(".")
 BASE_URL = "https://eofwaer.github.io/dday"
 
 IMAGE_WIDTH = 800
@@ -20,30 +20,29 @@ IMAGE_HEIGHT = 400
 # =========================================================
 # 생성 옵션
 # =========================================================
+
 GENERATE_IMAGES = True
 GENERATE_STATUS_REPORT = True
 GENERATE_MILESTONE_REPORT = True
 GENERATE_LINK_LIST = True
 
-# 카테고리 필터
-# "birth", "activity" 중에서 필요한 것만 남기면 됨
 GENERATE_CATEGORIES = {"birth", "activity"}
 
-# 특정 title만 뽑고 싶으면 여기에 넣기
-# 예: ONLY_TITLES = {"데뷔", "결성일"}
+# 특정 항목만 생성하고 싶으면 예: {"데뷔", "fromm"}
 ONLY_TITLES = set()
 
 # =========================================================
 # 이미지 표시 옵션
 # =========================================================
+
 SHOW_TITLE = True
 SHOW_CATEGORY = False
-SHOW_BASE_DATE = False
+SHOW_DATE = False
 SHOW_TODAY_DATE = False
 
-USE_THOUSANDS_SEPARATOR = False   # D+10,641처럼 쉼표 표시
-BORDER_WIDTH = 8
+USE_THOUSANDS_SEPARATOR = False
 
+BORDER_WIDTH = 8
 BACKGROUND_COLOR = "white"
 TEXT_COLOR = "black"
 BORDER_COLOR = "black"
@@ -51,6 +50,7 @@ BORDER_COLOR = "black"
 # =========================================================
 # 폰트 경로
 # =========================================================
+
 FONT_CANDIDATES = [
     "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
     "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
@@ -58,51 +58,53 @@ FONT_CANDIDATES = [
 ]
 
 # =========================================================
-# 데이터
-# base_count = 2026-05-17 기준 값
+# D+ 데이터
+# 해당일을 1일차로 계산
 # =========================================================
+
 items = [
     # 멤버 출생
-    {"category": "birth", "title": "이새롬 출생", "base_count": 10641, "filename": "birth_saerom.png"},
-    {"category": "birth", "title": "송하영 출생", "base_count": 10376, "filename": "birth_hayoung.png"},
-    {"category": "birth", "title": "장규리 출생", "base_count": 10287, "filename": "birth_gyuri.png"},
-    {"category": "birth", "title": "박지원 출생", "base_count": 10204, "filename": "birth_jiwon.png"},
-    {"category": "birth", "title": "노지선 출생", "base_count": 9956, "filename": "birth_jisun.png"},
-    {"category": "birth", "title": "이서연 출생", "base_count": 9531, "filename": "birth_seoyeon.png"},
-    {"category": "birth", "title": "이채영 출생", "base_count": 9418, "filename": "birth_chaeyoung.png"},
-    {"category": "birth", "title": "이나경 출생", "base_count": 9400, "filename": "birth_nagyung.png"},
-    {"category": "birth", "title": "백지헌 출생", "base_count": 8350, "filename": "birth_jiheon.png"},
+    {"category": "birth", "title": "이새롬 출생", "date": date(1997, 1, 7), "filename": "birth_saerom.png"},
+    {"category": "birth", "title": "송하영 출생", "date": date(1997, 9, 29), "filename": "birth_hayoung.png"},
+    {"category": "birth", "title": "장규리 출생", "date": date(1997, 12, 27), "filename": "birth_gyuri.png"},
+    {"category": "birth", "title": "박지원 출생", "date": date(1998, 3, 20), "filename": "birth_jiwon.png"},
+    {"category": "birth", "title": "노지선 출생", "date": date(1998, 11, 23), "filename": "birth_jisun.png"},
+    {"category": "birth", "title": "이서연 출생", "date": date(2000, 1, 22), "filename": "birth_seoyeon.png"},
+    {"category": "birth", "title": "이채영 출생", "date": date(2000, 5, 14), "filename": "birth_chaeyoung.png"},
+    {"category": "birth", "title": "이나경 출생", "date": date(2000, 6, 1), "filename": "birth_nagyung.png"},
+    {"category": "birth", "title": "백지헌 출생", "date": date(2003, 4, 17), "filename": "birth_jiheon.png"},
 
     # 그룹 / 활동 / 곡
-    {"category": "activity", "title": "결성일", "base_count": 3071, "filename": "formed.png"},
-    {"category": "activity", "title": "유리구두", "base_count": 3009, "filename": "glass_shoes.png"},
-    {"category": "activity", "title": "데뷔", "base_count": 2954, "filename": "debut.png"},
-    {"category": "activity", "title": "두근두근", "base_count": 2822, "filename": "to_heart.png"},
-    {"category": "activity", "title": "럽밤", "base_count": 2695, "filename": "love_bomb.png"},
-    {"category": "activity", "title": "펀", "base_count": 2458, "filename": "fun.png"},
-    {"category": "activity", "title": "필굿", "base_count": 1988, "filename": "feel_good.png"},
-    {"category": "activity", "title": "위고", "base_count": 1745, "filename": "we_go.png"},
-    {"category": "activity", "title": "톡앤톡", "base_count": 1638, "filename": "talk_and_talk.png"},
-    {"category": "activity", "title": "첫 1위", "base_count": 1632, "filename": "first_win.png"},
-    {"category": "activity", "title": "디엠", "base_count": 1500, "filename": "dm.png"},
-    {"category": "activity", "title": "팬미팅", "base_count": 1405, "filename": "fanmeeting.png"},
-    {"category": "activity", "title": "스디웨", "base_count": 1339, "filename": "stay_this_way.png"},
-    {"category": "activity", "title": "러브프롬", "base_count": 1244, "filename": "love_from.png"},
-    {"category": "activity", "title": "미나우", "base_count": 996, "filename": "menow.png"},
-    {"category": "activity", "title": "프롬나우", "base_count": 760, "filename": "from_now.png"},
-    {"category": "activity", "title": "슈퍼소닉", "base_count": 562, "filename": "supersonic.png"},
-    {"category": "activity", "title": "프롬", "base_count": 429, "filename": "from.png"},
-    {"category": "activity", "title": "fromm", "base_count": 366, "filename": "fromm.png"},
-    {"category": "activity", "title": "라큐베", "base_count": 245, "filename": "lacube.png"},
-    {"category": "activity", "title": "나우투머로우", "base_count": 201, "filename": "now_tomorrow.png"},
-    {"category": "activity", "title": "하얀그리움", "base_count": 85, "filename": "white_longing.png"},
-    {"category": "activity", "title": "나우투머로우 앵콘", "base_count": 26, "filename": "now_tomorrow_encore.png"},
+    {"category": "activity", "title": "결성일", "date": date(2017, 9, 27), "filename": "formed.png"},
+    {"category": "activity", "title": "유리구두", "date": date(2017, 11, 30), "filename": "glass_shoes.png"},
+    {"category": "activity", "title": "데뷔", "date": date(2018, 1, 24), "filename": "debut.png"},
+    {"category": "activity", "title": "두근두근", "date": date(2018, 6, 5), "filename": "to_heart.png"},
+    {"category": "activity", "title": "럽밤", "date": date(2018, 10, 10), "filename": "love_bomb.png"},
+    {"category": "activity", "title": "펀", "date": date(2019, 6, 4), "filename": "fun.png"},
+    {"category": "activity", "title": "필굿", "date": date(2020, 9, 16), "filename": "feel_good.png"},
+    {"category": "activity", "title": "위고", "date": date(2021, 5, 17), "filename": "we_go.png"},
+    {"category": "activity", "title": "톡앤톡", "date": date(2021, 9, 1), "filename": "talk_and_talk.png"},
+    {"category": "activity", "title": "첫 1위", "date": date(2021, 9, 7), "filename": "first_win.png"},
+    {"category": "activity", "title": "디엠", "date": date(2022, 1, 17), "filename": "dm.png"},
+    {"category": "activity", "title": "팬미팅", "date": date(2022, 4, 22), "filename": "fanmeeting.png"},
+    {"category": "activity", "title": "스디웨", "date": date(2022, 6, 27), "filename": "stay_this_way.png"},
+    {"category": "activity", "title": "러브프롬", "date": date(2022, 9, 30), "filename": "love_from.png"},
+    {"category": "activity", "title": "미나우", "date": date(2023, 6, 5), "filename": "menow.png"},
+    {"category": "activity", "title": "프롬나우", "date": date(2024, 1, 27), "filename": "from_now.png"},
+    {"category": "activity", "title": "슈퍼소닉", "date": date(2024, 8, 12), "filename": "supersonic.png"},
+    {"category": "activity", "title": "프롬", "date": date(2024, 12, 23), "filename": "from.png"},
+    {"category": "activity", "title": "fromm", "date": date(2025, 2, 24), "filename": "fromm.png"},
+    {"category": "activity", "title": "라큐베", "date": date(2025, 6, 25), "filename": "lacube.png"},
+    {"category": "activity", "title": "나우투머로우", "date": date(2025, 8, 8), "filename": "now_tomorrow.png"},
+    {"category": "activity", "title": "하얀그리움", "date": date(2025, 12, 2), "filename": "white_longing.png"},
+    {"category": "activity", "title": "나우투머로우 앵콘", "date": date(2026, 1, 30), "filename": "now_tomorrow_encore.png"},
+    {"category": "activity", "title": "일본데뷔", "date": date(2026, 4, 1), "filename": "japan_debut.png"},
 ]
-
 
 # =========================================================
 # 공용 함수
 # =========================================================
+
 def load_font(size: int):
     for path in FONT_CANDIDATES:
         if os.path.exists(path):
@@ -133,25 +135,19 @@ def draw_centered_text(draw, text, center_x, y, font, fill):
     draw.text((x, y), text, font=font, fill=fill)
 
 
-def format_dplus(value: int) -> str:
-    if USE_THOUSANDS_SEPARATOR:
-        return f"D+{value:,}"
-    return f"D+{value}"
-
-
 def get_today() -> date:
     return datetime.now(ZoneInfo(TIMEZONE)).date()
 
 
 def current_count(item: dict, today: date) -> int:
-    delta_days = (today - BASE_DATE).days
-    return item["base_count"] + delta_days
-
-
-def get_start_date(item: dict) -> date:
     # 해당일을 1일차로 계산
-    # base_count = (BASE_DATE - start_date).days + 1
-    return BASE_DATE - timedelta(days=item["base_count"] - 1)
+    return (today - item["date"]).days + 1
+
+
+def format_dplus(value: int) -> str:
+    if USE_THOUSANDS_SEPARATOR:
+        return f"D+{value:,}"
+    return f"D+{value}"
 
 
 def filter_items(all_items):
@@ -168,6 +164,7 @@ def filter_items(all_items):
 # =========================================================
 # 이미지 생성
 # =========================================================
+
 def make_image(item: dict, today: date):
     title = item["title"]
     filename = item["filename"]
@@ -177,14 +174,12 @@ def make_image(item: dict, today: date):
     img = Image.new("RGB", (IMAGE_WIDTH, IMAGE_HEIGHT), BACKGROUND_COLOR)
     draw = ImageDraw.Draw(img)
 
-    # 테두리
     draw.rectangle(
         [(0, 0), (IMAGE_WIDTH - 1, IMAGE_HEIGHT - 1)],
         outline=BORDER_COLOR,
         width=BORDER_WIDTH
     )
 
-    # 각 줄 준비
     lines = []
 
     if SHOW_CATEGORY:
@@ -196,14 +191,14 @@ def make_image(item: dict, today: date):
     if SHOW_TITLE:
         lines.append(("title", title))
 
-    if SHOW_BASE_DATE:
-        lines.append(("meta", f"기준일: {BASE_DATE.isoformat()}"))
+    if SHOW_DATE:
+        lines.append(("meta", f"시작일: {item['date'].isoformat()}"))
 
     if SHOW_TODAY_DATE:
         lines.append(("meta", f"오늘: {today.isoformat()}"))
 
-    # 폰트 준비
     font_map = {}
+
     for line_type, text in lines:
         if line_type == "main":
             font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 80, 180)
@@ -214,7 +209,6 @@ def make_image(item: dict, today: date):
         else:
             font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 80, 24)
 
-    # 전체 높이 계산
     spacing_map = {
         "small": 10,
         "main": 18,
@@ -224,6 +218,7 @@ def make_image(item: dict, today: date):
 
     total_height = 0
     line_heights = []
+
     for i, (line_type, text) in enumerate(lines):
         font = font_map[(line_type, text)]
         _, h = text_width_height(draw, text, font)
@@ -248,8 +243,9 @@ def make_image(item: dict, today: date):
 
 
 # =========================================================
-# 현재 상태 보고서
+# 현재값 보고서
 # =========================================================
+
 def write_status_report(items_to_use, today: date):
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     output_path = REPORT_DIR / "dplus_status.txt"
@@ -258,7 +254,6 @@ def write_status_report(items_to_use, today: date):
     lines.append(f"[D+ 현재값] {today.isoformat()}")
     lines.append("")
 
-    # 카테고리별 출력
     for category in ["birth", "activity"]:
         category_items = [x for x in items_to_use if x["category"] == category]
         if not category_items:
@@ -280,9 +275,10 @@ def write_status_report(items_to_use, today: date):
 # =========================================================
 # 올해 milestone 보고서
 # 규칙:
-# - 10000일 미만: 500일 단위
-# - 10000일 이상: 1000일 단위
+# 10000일 미만: 500일 단위
+# 10000일 이상: 1000일 단위
 # =========================================================
+
 def is_valid_milestone(n: int) -> bool:
     if n < 1:
         return False
@@ -301,9 +297,8 @@ def write_milestone_report(items_to_use, report_year: int):
     milestone_rows = []
 
     for item in items_to_use:
-        start_date = get_start_date(item)
+        start_date = item["date"]
 
-        # 이 해의 시작일/끝일에 해당하는 D+ 값
         count_at_year_start = (year_start - start_date).days + 1
         count_at_year_end = (year_end - start_date).days + 1
 
@@ -318,6 +313,7 @@ def write_milestone_report(items_to_use, report_year: int):
                 continue
 
             milestone_date = start_date + timedelta(days=n - 1)
+
             if year_start <= milestone_date <= year_end:
                 milestone_rows.append((milestone_date, item["title"], n))
 
@@ -341,6 +337,7 @@ def write_milestone_report(items_to_use, report_year: int):
 # =========================================================
 # 링크 목록
 # =========================================================
+
 def write_link_list(items_to_use):
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     output_path = REPORT_DIR / "dplus_links.txt"
@@ -359,6 +356,7 @@ def write_link_list(items_to_use):
 # =========================================================
 # 메인
 # =========================================================
+
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
@@ -366,7 +364,6 @@ def main():
     today = get_today()
     items_to_use = filter_items(items)
 
-    print(f"기준일(BASE_DATE): {BASE_DATE}")
     print(f"오늘(today): {today}")
     print(f"사용 항목 수: {len(items_to_use)}")
 
