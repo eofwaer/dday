@@ -32,3 +32,4 @@ fromm : https://eofwaer.github.io/dday/fromm.png
 나우투머로우 : https://eofwaer.github.io/dday/now_tomorrow.png
 하얀그리움 : https://eofwaer.github.io/dday/white_longing.png
 나우투머로우 앵콘 : https://eofwaer.github.io/dday/now_tomorrow_encore.png
+일본데뷔 : https://eofwaer.github.io/dday/japan_debut.png
