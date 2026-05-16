@@ -31,13 +31,15 @@ jobs:
           sudo apt-get install -y fonts-noto-cjk
           pip install pillow
 
-      - name: Generate D-day images
-        run: python make_dday.py
+      - name: Generate D-day and D-plus images
+        run: |
+          python make_dday.py
+          python make_dplus.py
 
-      - name: Commit updated images
+      - name: Commit updated images and reports
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add *.png
-          git commit -m "Update dday images" || echo "No changes to commit"
+          git add *.png *.txt
+          git commit -m "Update dday and dplus images" || echo "No changes to commit"
           git push
