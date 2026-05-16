@@ -14,8 +14,10 @@ OUTPUT_DIR = Path(".")
 REPORT_DIR = Path(".")
 BASE_URL = "https://eofwaer.github.io/dday"
 
-IMAGE_WIDTH = 220
-IMAGE_HEIGHT = 110
+# 디시 공앱 / 아이폰에서 img width가 무시될 수 있으므로
+# 원본 PNG 자체를 작게 만든다
+IMAGE_WIDTH = 260
+IMAGE_HEIGHT = 130
 
 # =========================================================
 # 생성 옵션
@@ -35,18 +37,20 @@ ONLY_TITLES = set()
 # 이미지 표시 옵션
 # =========================================================
 
-# 디시 표에서 항목명을 따로 쓰니까 이미지에는 D+만 표시
-SHOW_TITLE = False
+# 표가 깨져도 숫자만 덩그러니 보이지 않도록
+# 이미지 안에 항목명을 작게 표시
+SHOW_TITLE = True
 SHOW_CATEGORY = False
 SHOW_DATE = False
 SHOW_TODAY_DATE = False
 
 USE_THOUSANDS_SEPARATOR = False
 
-BORDER_WIDTH = 8
-BACKGROUND_COLOR = "white"
-TEXT_COLOR = "black"
-BORDER_COLOR = "black"
+# 라이트모드 / 다크모드 모두 대비
+BORDER_WIDTH = 3
+BACKGROUND_COLOR = "black"
+TEXT_COLOR = "white"
+BORDER_COLOR = "white"
 
 # =========================================================
 # 폰트 경로
@@ -187,10 +191,10 @@ def make_image(item: dict, today: date):
         category_text = "출생" if item["category"] == "birth" else "활동"
         lines.append(("small", category_text))
 
-    lines.append(("main", dplus_text))
-
     if SHOW_TITLE:
         lines.append(("title", title))
+
+    lines.append(("main", dplus_text))
 
     if SHOW_DATE:
         lines.append(("meta", f"시작일: {item['date'].isoformat()}"))
@@ -202,20 +206,19 @@ def make_image(item: dict, today: date):
 
     for line_type, text in lines:
         if line_type == "main":
-            # D+만 보이게 할 거라 크게 표시해도 안 겹침
-            font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 80, 180)
+            font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 30, 54)
         elif line_type == "title":
-            font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 80, 42)
+            font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 30, 22)
         elif line_type == "small":
-            font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 80, 28)
+            font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 30, 18)
         else:
-            font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 80, 24)
+            font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 30, 16)
 
     spacing_map = {
-        "small": 10,
-        "main": 18,
-        "title": 10,
-        "meta": 6,
+        "small": 4,
+        "title": 8,
+        "main": 4,
+        "meta": 4,
     }
 
     total_height = 0
