@@ -14,8 +14,8 @@ OUTPUT_DIR = Path(".")
 REPORT_DIR = Path(".")
 BASE_URL = "https://eofwaer.github.io/dday"
 
-IMAGE_WIDTH = 800
-IMAGE_HEIGHT = 400
+IMAGE_WIDTH = 220
+IMAGE_HEIGHT = 110
 
 # =========================================================
 # 생성 옵션
