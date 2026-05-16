@@ -35,7 +35,8 @@ ONLY_TITLES = set()
 # 이미지 표시 옵션
 # =========================================================
 
-SHOW_TITLE = True
+# 디시 표에서 항목명을 따로 쓰니까 이미지에는 D+만 표시
+SHOW_TITLE = False
 SHOW_CATEGORY = False
 SHOW_DATE = False
 SHOW_TODAY_DATE = False
@@ -201,6 +202,7 @@ def make_image(item: dict, today: date):
 
     for line_type, text in lines:
         if line_type == "main":
+            # D+만 보이게 할 거라 크게 표시해도 안 겹침
             font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 80, 180)
         elif line_type == "title":
             font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 80, 42)
