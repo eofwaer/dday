@@ -1,389 +1,393 @@
-from datetime import date, datetime, timedelta
-from zoneinfo import ZoneInfo
-from PIL import Image, ImageDraw, ImageFont
-from pathlib import Path
+from __future__ import annotations
+
+import colorsys
 import os
+from dataclasses import dataclass
+from datetime import date, datetime
+from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFont
 
 # =========================================================
-# 기본 설정
+# 경로 / 설정
 # =========================================================
 
-TIMEZONE = "Asia/Seoul"
+ROOT = Path(__file__).resolve().parent
+ASSETS_DIR = ROOT / "assets"
+FONTS_DIR = ROOT / "fonts"
+OUTPUT_DIR = ROOT  # png/txt를 저장할 위치
 
-OUTPUT_DIR = Path(".")
-REPORT_DIR = Path(".")
-BASE_URL = "https://eofwaer.github.io/dday"
+BONOBONO_PATH = ASSETS_DIR / "bonobono.png"
 
-# 디시 공앱 / 아이폰에서 img width가 무시될 수 있으므로
-# 원본 PNG 자체를 작게 만든다
-IMAGE_WIDTH = 260
-IMAGE_HEIGHT = 130
+# 테스트용 날짜 지정 가능
+# 예: TEST_TODAY = date(2026, 6, 4)
+TEST_TODAY = None
 
-# =========================================================
-# 생성 옵션
-# =========================================================
+# 이미지 크기
+WIDTH = 300
+HEIGHT = 150
 
-GENERATE_IMAGES = True
-GENERATE_STATUS_REPORT = True
-GENERATE_MILESTONE_REPORT = True
-GENERATE_LINK_LIST = True
+# 일반판 설정
+NORMAL_BG = (0, 0, 0)
+NORMAL_BORDER = (255, 255, 255)
+NORMAL_TEXT = (255, 255, 255)
 
-GENERATE_CATEGORIES = {"birth", "activity"}
+# 특별판 설정
+SPECIAL_BG = (0, 0, 0, 255)
 
-# 특정 항목만 생성하고 싶으면 예: {"데뷔", "fromm"}
-ONLY_TITLES = set()
+# 일반판은 예전처럼 숫자만 보이게
+SHOW_TITLE_ON_NORMAL = False
 
-# =========================================================
-# 이미지 표시 옵션
-# =========================================================
+# n주년 당일엔 전부 특별판으로 만들지 여부
+SPECIAL_ON_ANNIVERSARY = True
 
-# 표가 깨져도 숫자만 덩그러니 보이지 않도록
-# 이미지 안에 항목명을 작게 표시
-SHOW_TITLE = True
-SHOW_CATEGORY = False
-SHOW_DATE = False
-SHOW_TODAY_DATE = False
-
-USE_THOUSANDS_SEPARATOR = False
-
-# 라이트모드 / 다크모드 모두 대비
-BORDER_WIDTH = 3
-BACKGROUND_COLOR = "black"
-TEXT_COLOR = "white"
-BORDER_COLOR = "white"
+# 만약 특정 파일만 특별판으로 하고 싶으면 여기에 파일명만 넣고
+# SPECIAL_ONLY_THESE = {"debut.png", "fun.png"}
+# 처럼 사용하면 됨. None이면 전부 허용.
+SPECIAL_ONLY_THESE = None
 
 # =========================================================
-# 폰트 경로
+# 데이터
+# =========================================================
+
+@dataclass
+class DPlusItem:
+    filename: str
+    title: str
+    event_date: date
+
+
+def d(y: int, m: int, day: int) -> date:
+    return date(y, m, day)
+
+
+ITEMS: list[DPlusItem] = [
+    # =========================
+    # 멤버 생일
+    # =========================
+    DPlusItem("birth_saerom.png", "새롬", d(1997, 1, 7)),
+    DPlusItem("birth_hayoung.png", "하영", d(1997, 9, 29)),
+    DPlusItem("birth_gyuri.png", "규리", d(1997, 12, 27)),
+    DPlusItem("birth_jiwon.png", "지원", d(1998, 3, 20)),
+    DPlusItem("birth_jisun.png", "지선", d(1998, 11, 23)),
+    DPlusItem("birth_seoyeon.png", "서연", d(2000, 1, 22)),
+    DPlusItem("birth_chaeyoung.png", "채영", d(2000, 5, 14)),
+    DPlusItem("birth_nagyung.png", "나경", d(2000, 6, 1)),
+    DPlusItem("birth_jiheon.png", "지헌", d(2003, 4, 17)),
+
+    # =========================
+    # 팀 / 활동 기념일
+    # =========================
+    DPlusItem("formed.png", "결성", d(2017, 9, 27)),
+    DPlusItem("glass_shoes.png", "유리구두", d(2017, 11, 30)),
+    DPlusItem("debut.png", "데뷔", d(2018, 1, 24)),
+
+    # 네 repo에서 to_heart.png를 두근두근용으로 쓰던 흐름 기준
+    # 만약 파일명이 dkdk.png면 바꿔서 쓰면 됨
+    DPlusItem("to_heart.png", "두근두근", d(2018, 6, 5)),
+
+    DPlusItem("love_bomb.png", "LOVE BOMB", d(2018, 10, 10)),
+    DPlusItem("fun.png", "FUN!", d(2019, 6, 4)),
+    DPlusItem("feel_good.png", "Feel Good", d(2020, 9, 16)),
+    DPlusItem("we_go.png", "WE GO", d(2021, 5, 17)),
+    DPlusItem("talk_and_talk.png", "Talk & Talk", d(2021, 9, 1)),
+    DPlusItem("first_win.png", "첫 1위", d(2021, 9, 7)),
+    DPlusItem("dm.png", "DM", d(2022, 1, 17)),
+    DPlusItem("fanmeeting.png", "팬미팅", d(2022, 3, 26)),
+    DPlusItem("stay_this_way.png", "Stay This Way", d(2022, 6, 27)),
+    DPlusItem("love_from.png", "Love From.", d(2023, 3, 15)),
+
+    # 언마월 3주년을 원한 흐름 기준으로 menow.png를 2023-06-05로 둠
+    DPlusItem("menow.png", "언마월", d(2023, 6, 5)),
+
+    # 아래부터는 네 현재 repo 날짜와 다를 수 있으니
+    # 필요하면 수정해서 쓰면 됨
+    DPlusItem("from_now.png", "From Now.", d(2024, 1, 1)),
+    DPlusItem("supersonic.png", "Supersonic", d(2024, 8, 12)),
+    DPlusItem("from.png", "FROM", d(2025, 1, 1)),
+    DPlusItem("fromm.png", "fromm", d(2025, 1, 1)),
+    DPlusItem("lacube.png", "La Cube", d(2025, 1, 1)),
+    DPlusItem("now_tomorrow.png", "Now, Tomorrow", d(2025, 1, 1)),
+    DPlusItem("white_longing.png", "하얀 그리움", d(2025, 1, 1)),
+    DPlusItem("now_tomorrow_encore.png", "Now, Tomorrow ENCORE", d(2025, 1, 1)),
+    DPlusItem("japan_debut.png", "일본 데뷔", d(2025, 6, 1)),
+]
+
+# =========================================================
+# 폰트
 # =========================================================
 
 FONT_CANDIDATES = [
-    "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
-    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+    FONTS_DIR / "NanumGothicBold.ttf",
+    FONTS_DIR / "NanumGothic.ttf",
+    FONTS_DIR / "Pretendard-Bold.ttf",
+    FONTS_DIR / "NotoSansCJKkr-Bold.otf",
+    Path("/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf"),
+    Path("/usr/share/fonts/truetype/nanum/NanumBarunGothicBold.ttf"),
+    Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"),
+    Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
 ]
 
-# =========================================================
-# D+ 데이터
-# 해당일을 1일차로 계산
-# =========================================================
 
-items = [
-    # 멤버 출생
-    {"category": "birth", "title": "이새롬 출생", "date": date(1997, 1, 7), "filename": "birth_saerom.png"},
-    {"category": "birth", "title": "송하영 출생", "date": date(1997, 9, 29), "filename": "birth_hayoung.png"},
-    {"category": "birth", "title": "장규리 출생", "date": date(1997, 12, 27), "filename": "birth_gyuri.png"},
-    {"category": "birth", "title": "박지원 출생", "date": date(1998, 3, 20), "filename": "birth_jiwon.png"},
-    {"category": "birth", "title": "노지선 출생", "date": date(1998, 11, 23), "filename": "birth_jisun.png"},
-    {"category": "birth", "title": "이서연 출생", "date": date(2000, 1, 22), "filename": "birth_seoyeon.png"},
-    {"category": "birth", "title": "이채영 출생", "date": date(2000, 5, 14), "filename": "birth_chaeyoung.png"},
-    {"category": "birth", "title": "이나경 출생", "date": date(2000, 6, 1), "filename": "birth_nagyung.png"},
-    {"category": "birth", "title": "백지헌 출생", "date": date(2003, 4, 17), "filename": "birth_jiheon.png"},
-
-    # 그룹 / 활동 / 곡
-    {"category": "activity", "title": "결성일", "date": date(2017, 9, 27), "filename": "formed.png"},
-    {"category": "activity", "title": "유리구두", "date": date(2017, 11, 30), "filename": "glass_shoes.png"},
-    {"category": "activity", "title": "데뷔", "date": date(2018, 1, 24), "filename": "debut.png"},
-    {"category": "activity", "title": "두근두근", "date": date(2018, 6, 5), "filename": "to_heart.png"},
-    {"category": "activity", "title": "럽밤", "date": date(2018, 10, 10), "filename": "love_bomb.png"},
-    {"category": "activity", "title": "펀", "date": date(2019, 6, 4), "filename": "fun.png"},
-    {"category": "activity", "title": "필굿", "date": date(2020, 9, 16), "filename": "feel_good.png"},
-    {"category": "activity", "title": "위고", "date": date(2021, 5, 17), "filename": "we_go.png"},
-    {"category": "activity", "title": "톡앤톡", "date": date(2021, 9, 1), "filename": "talk_and_talk.png"},
-    {"category": "activity", "title": "첫 1위", "date": date(2021, 9, 7), "filename": "first_win.png"},
-    {"category": "activity", "title": "디엠", "date": date(2022, 1, 17), "filename": "dm.png"},
-    {"category": "activity", "title": "팬미팅", "date": date(2022, 4, 22), "filename": "fanmeeting.png"},
-    {"category": "activity", "title": "스디웨", "date": date(2022, 6, 27), "filename": "stay_this_way.png"},
-    {"category": "activity", "title": "러브프롬", "date": date(2022, 9, 30), "filename": "love_from.png"},
-    {"category": "activity", "title": "미나우", "date": date(2023, 6, 5), "filename": "menow.png"},
-    {"category": "activity", "title": "프롬나우", "date": date(2024, 1, 27), "filename": "from_now.png"},
-    {"category": "activity", "title": "슈퍼소닉", "date": date(2024, 8, 12), "filename": "supersonic.png"},
-    {"category": "activity", "title": "프롬", "date": date(2024, 12, 23), "filename": "from.png"},
-    {"category": "activity", "title": "fromm", "date": date(2025, 2, 24), "filename": "fromm.png"},
-    {"category": "activity", "title": "라큐베", "date": date(2025, 6, 25), "filename": "lacube.png"},
-    {"category": "activity", "title": "나우투머로우", "date": date(2025, 8, 8), "filename": "now_tomorrow.png"},
-    {"category": "activity", "title": "하얀그리움", "date": date(2025, 12, 2), "filename": "white_longing.png"},
-    {"category": "activity", "title": "나우투머로우 앵콘", "date": date(2026, 1, 30), "filename": "now_tomorrow_encore.png"},
-    {"category": "activity", "title": "일본데뷔", "date": date(2026, 4, 1), "filename": "japan_debut.png"},
-]
-
-# =========================================================
-# 공용 함수
-# =========================================================
-
-def load_font(size: int):
+def load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     for path in FONT_CANDIDATES:
-        if os.path.exists(path):
-            return ImageFont.truetype(path, size)
+        if path.exists():
+            try:
+                return ImageFont.truetype(str(path), size=size)
+            except Exception:
+                pass
     return ImageFont.load_default()
 
 
-def fit_font(draw: ImageDraw.ImageDraw, text: str, max_width: int, start_size: int):
+FONT_NORMAL_NUMBER = load_font(56)
+FONT_SPECIAL_TITLE = load_font(28)
+FONT_SPECIAL_NUMBER = load_font(44)
+FONT_CORNER = load_font(20)
+
+# =========================================================
+# 유틸
+# =========================================================
+
+def today_kst() -> date:
+    if TEST_TODAY is not None:
+        return TEST_TODAY
+    return datetime.now().date()
+
+
+def get_dplus(start_date: date, today: date) -> int:
+    # 당일을 1일차로 계산
+    return (today - start_date).days + 1
+
+
+def get_anniversary_years(start_date: date, today: date) -> int:
+    """
+    정확히 n주년 '당일'이면 n 반환, 아니면 0
+    """
+    years = today.year - start_date.year
+
+    if (today.month, today.day) < (start_date.month, start_date.day):
+        years -= 1
+
+    if years >= 1 and (today.month, today.day) == (start_date.month, start_date.day):
+        return years
+
+    return 0
+
+
+def base_name(filename: str) -> str:
+    return Path(filename).stem
+
+
+def output_png_path(filename: str) -> Path:
+    return OUTPUT_DIR / filename
+
+
+def output_txt_path(filename: str) -> Path:
+    return OUTPUT_DIR / f"{base_name(filename)}.txt"
+
+
+def fit_text(draw: ImageDraw.ImageDraw, text: str, max_width: int, start_size: int) -> ImageFont.ImageFont:
+    """
+    긴 제목을 폭 안에 맞추기 위해 폰트 크기를 줄여가며 찾음
+    """
     size = start_size
-    while size >= 10:
+    while size >= 12:
         font = load_font(size)
         bbox = draw.textbbox((0, 0), text, font=font)
         width = bbox[2] - bbox[0]
         if width <= max_width:
             return font
-        size -= 2
-    return load_font(10)
+        size -= 1
+    return load_font(12)
 
 
-def text_width_height(draw, text, font):
+def center_text_x(draw: ImageDraw.ImageDraw, text: str, font, image_width: int) -> int:
     bbox = draw.textbbox((0, 0), text, font=font)
-    return bbox[2] - bbox[0], bbox[3] - bbox[1]
+    text_w = bbox[2] - bbox[0]
+    return (image_width - text_w) // 2
 
 
-def draw_centered_text(draw, text, center_x, y, font, fill):
-    w, _ = text_width_height(draw, text, font)
-    x = center_x - w // 2
-    draw.text((x, y), text, font=font, fill=fill)
+def rainbow_color(t: float) -> tuple[int, int, int]:
+    r, g, b = colorsys.hsv_to_rgb(t, 1.0, 1.0)
+    return (int(r * 255), int(g * 255), int(b * 255))
 
 
-def get_today() -> date:
-    return datetime.now(ZoneInfo(TIMEZONE)).date()
+def draw_rainbow_border(draw: ImageDraw.ImageDraw, x1: int, y1: int, x2: int, y2: int, thickness: int = 4) -> None:
+    width = x2 - x1
+    height = y2 - y1
+
+    # 위/아래
+    for x in range(width + 1):
+        t = x / max(1, width)
+        color = rainbow_color(t)
+        for k in range(thickness):
+            draw.point((x1 + x, y1 + k), fill=color)
+            draw.point((x1 + x, y2 - k), fill=color)
+
+    # 좌/우
+    for y in range(height + 1):
+        t = y / max(1, height)
+        color = rainbow_color(t)
+        for k in range(thickness):
+            draw.point((x1 + k, y1 + y), fill=color)
+            draw.point((x2 - k, y1 + y), fill=color)
 
 
-def current_count(item: dict, today: date) -> int:
-    # 해당일을 1일차로 계산
-    return (today - item["date"]).days + 1
+def draw_rainbow_text(img: Image.Image, text: str, font, x: int, y: int) -> None:
+    """
+    x, y는 텍스트의 좌상단
+    """
+    draw = ImageDraw.Draw(img)
+    bbox = draw.textbbox((0, 0), text, font=font)
+    text_w = bbox[2] - bbox[0]
+    text_h = bbox[3] - bbox[1]
+
+    mask = Image.new("L", (text_w, text_h), 0)
+    mask_draw = ImageDraw.Draw(mask)
+    mask_draw.text((0, 0), text, font=font, fill=255)
+
+    grad = Image.new("RGBA", (text_w, text_h), (0, 0, 0, 0))
+    grad_draw = ImageDraw.Draw(grad)
+
+    for px in range(text_w):
+        t = px / max(1, text_w - 1)
+        color = rainbow_color(t)
+        grad_draw.line((px, 0, px, text_h), fill=color + (255,))
+
+    img.paste(grad, (x, y), mask)
 
 
-def format_dplus(value: int) -> str:
-    if USE_THOUSANDS_SEPARATOR:
-        return f"D+{value:,}"
-    return f"D+{value}"
+def paste_bonobono(base_img: Image.Image, x: int, y: int, max_w: int = 70, max_h: int = 70) -> None:
+    if not BONOBONO_PATH.exists():
+        return
+
+    try:
+        bono = Image.open(BONOBONO_PATH).convert("RGBA")
+        bono.thumbnail((max_w, max_h))
+        base_img.paste(bono, (x, y), bono)
+    except Exception:
+        pass
 
 
-def filter_items(all_items):
-    result = []
-    for item in all_items:
-        if item["category"] not in GENERATE_CATEGORIES:
-            continue
-        if ONLY_TITLES and item["title"] not in ONLY_TITLES:
-            continue
-        result.append(item)
-    return result
+def save_text_file(filename: str, display_text: str) -> None:
+    txt_path = output_txt_path(filename)
+    txt_path.write_text(display_text, encoding="utf-8")
 
 
 # =========================================================
-# 이미지 생성
+# 렌더링
 # =========================================================
 
-def make_image(item: dict, today: date):
-    title = item["title"]
-    filename = item["filename"]
-    dplus_value = current_count(item, today)
-    dplus_text = format_dplus(dplus_value)
-
-    img = Image.new("RGB", (IMAGE_WIDTH, IMAGE_HEIGHT), BACKGROUND_COLOR)
+def render_normal_image(item: DPlusItem, display_text: str) -> None:
+    img = Image.new("RGB", (WIDTH, HEIGHT), NORMAL_BG)
     draw = ImageDraw.Draw(img)
 
-    draw.rectangle(
-        [(0, 0), (IMAGE_WIDTH - 1, IMAGE_HEIGHT - 1)],
-        outline=BORDER_COLOR,
-        width=BORDER_WIDTH
-    )
+    # 바깥 흰 테두리
+    draw.rectangle([0, 0, WIDTH - 1, HEIGHT - 1], outline=NORMAL_BORDER, width=3)
 
-    lines = []
+    if SHOW_TITLE_ON_NORMAL:
+        title_font = fit_text(draw, item.title, max_width=WIDTH - 20, start_size=28)
+        x = center_text_x(draw, item.title, title_font, WIDTH)
+        draw.text((x, 18), item.title, font=title_font, fill=NORMAL_TEXT)
 
-    if SHOW_CATEGORY:
-        category_text = "출생" if item["category"] == "birth" else "활동"
-        lines.append(("small", category_text))
-
-    if SHOW_TITLE:
-        lines.append(("title", title))
-
-    lines.append(("main", dplus_text))
-
-    if SHOW_DATE:
-        lines.append(("meta", f"시작일: {item['date'].isoformat()}"))
-
-    if SHOW_TODAY_DATE:
-        lines.append(("meta", f"오늘: {today.isoformat()}"))
-
-    font_map = {}
-
-    for line_type, text in lines:
-        if line_type == "main":
-            font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 30, 54)
-        elif line_type == "title":
-            font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 30, 22)
-        elif line_type == "small":
-            font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 30, 18)
-        else:
-            font_map[(line_type, text)] = fit_font(draw, text, IMAGE_WIDTH - 30, 16)
-
-    spacing_map = {
-        "small": 4,
-        "title": 8,
-        "main": 4,
-        "meta": 4,
-    }
-
-    total_height = 0
-    line_heights = []
-
-    for i, (line_type, text) in enumerate(lines):
-        font = font_map[(line_type, text)]
-        _, h = text_width_height(draw, text, font)
-        line_heights.append(h)
-        total_height += h
-        if i < len(lines) - 1:
-            total_height += spacing_map[line_type]
-
-    y = (IMAGE_HEIGHT - total_height) // 2
-
-    for i, (line_type, text) in enumerate(lines):
-        font = font_map[(line_type, text)]
-        _, h = text_width_height(draw, text, font)
-        draw_centered_text(draw, text, IMAGE_WIDTH // 2, y, font, TEXT_COLOR)
-        y += h
-        if i < len(lines) - 1:
-            y += spacing_map[line_type]
-
-    output_path = OUTPUT_DIR / filename
-    img.save(output_path)
-    print(f"생성 완료: {output_path} / {dplus_text} / {title}")
-
-
-# =========================================================
-# 현재값 보고서
-# =========================================================
-
-def write_status_report(items_to_use, today: date):
-    REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    output_path = REPORT_DIR / "dplus_status.txt"
-
-    lines = []
-    lines.append(f"[D+ 현재값] {today.isoformat()}")
-    lines.append("")
-
-    for category in ["birth", "activity"]:
-        category_items = [x for x in items_to_use if x["category"] == category]
-        if not category_items:
-            continue
-
-        category_name = "멤버 출생" if category == "birth" else "그룹/활동/곡"
-        lines.append(f"## {category_name}")
-
-        for item in category_items:
-            value = current_count(item, today)
-            lines.append(f"{item['title']} : D+{value}")
-
-        lines.append("")
-
-    output_path.write_text("\n".join(lines), encoding="utf-8")
-    print(f"상태 보고서 생성 완료: {output_path}")
-
-
-# =========================================================
-# 올해 milestone 보고서
-# 규칙:
-# 10000일 미만: 500일 단위
-# 10000일 이상: 1000일 단위
-# =========================================================
-
-def is_valid_milestone(n: int) -> bool:
-    if n < 1:
-        return False
-    if n < 10000:
-        return n % 500 == 0
-    return n % 1000 == 0
-
-
-def write_milestone_report(items_to_use, report_year: int):
-    REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    output_path = REPORT_DIR / f"dplus_milestones_{report_year}.txt"
-
-    year_start = date(report_year, 1, 1)
-    year_end = date(report_year, 12, 31)
-
-    milestone_rows = []
-
-    for item in items_to_use:
-        start_date = item["date"]
-
-        count_at_year_start = (year_start - start_date).days + 1
-        count_at_year_end = (year_end - start_date).days + 1
-
-        if count_at_year_end < 1:
-            continue
-
-        lower = max(1, count_at_year_start)
-        upper = max(1, count_at_year_end)
-
-        for n in range(lower, upper + 1):
-            if not is_valid_milestone(n):
-                continue
-
-            milestone_date = start_date + timedelta(days=n - 1)
-
-            if year_start <= milestone_date <= year_end:
-                milestone_rows.append((milestone_date, item["title"], n))
-
-    milestone_rows.sort(key=lambda x: (x[0], x[1], x[2]))
-
-    lines = []
-    lines.append(f"[{report_year}년 milestone 일정]")
-    lines.append("규칙: 500일 단위 / 10000일 이후는 1000일 단위")
-    lines.append("")
-
-    if not milestone_rows:
-        lines.append("해당 연도 milestone 없음")
+        number_font = fit_text(draw, display_text, max_width=WIDTH - 20, start_size=56)
+        x = center_text_x(draw, display_text, number_font, WIDTH)
+        draw.text((x, 64), display_text, font=number_font, fill=NORMAL_TEXT)
     else:
-        for milestone_date, title, n in milestone_rows:
-            lines.append(f"{milestone_date.isoformat()} - {title} {n}일")
+        # 숫자만 크게
+        number_font = fit_text(draw, display_text, max_width=WIDTH - 20, start_size=60)
+        bbox = draw.textbbox((0, 0), display_text, font=number_font)
+        text_w = bbox[2] - bbox[0]
+        text_h = bbox[3] - bbox[1]
 
-    output_path.write_text("\n".join(lines), encoding="utf-8")
-    print(f"milestone 보고서 생성 완료: {output_path}")
+        x = (WIDTH - text_w) // 2
+        y = (HEIGHT - text_h) // 2 - 4
+        draw.text((x, y), display_text, font=number_font, fill=NORMAL_TEXT)
+
+    out_path = output_png_path(item.filename)
+    img.save(out_path)
+    save_text_file(item.filename, display_text)
+
+
+def render_special_image(item: DPlusItem, display_text: str, anniversary_years: int) -> None:
+    img = Image.new("RGBA", (WIDTH, HEIGHT), SPECIAL_BG)
+    draw = ImageDraw.Draw(img)
+
+    # 무지개 테두리
+    draw_rainbow_border(draw, 2, 2, WIDTH - 3, HEIGHT - 3, thickness=4)
+
+    # 왼쪽 아래 보노보노
+    paste_bonobono(img, 10, HEIGHT - 80, max_w=68, max_h=68)
+
+    # 제목
+    title_font = fit_text(draw, item.title, max_width=WIDTH - 20, start_size=28)
+    title_bbox = draw.textbbox((0, 0), item.title, font=title_font)
+    title_w = title_bbox[2] - title_bbox[0]
+    title_x = (WIDTH - title_w) // 2
+    title_y = 16
+    draw_rainbow_text(img, item.title, title_font, title_x, title_y)
+
+    # n주년 텍스트
+    number_font = fit_text(draw, display_text, max_width=WIDTH - 36, start_size=46)
+    num_bbox = draw.textbbox((0, 0), display_text, font=number_font)
+    num_w = num_bbox[2] - num_bbox[0]
+    num_x = (WIDTH - num_w) // 2 + 10  # 왼쪽 캐릭터 때문에 약간 우측으로
+    num_y = 58
+    draw_rainbow_text(img, display_text, number_font, num_x, num_y)
+
+    # 구석에 n 표시(원하면)
+    corner_text = str(anniversary_years)
+    draw.text((WIDTH - 20, 10), corner_text, font=FONT_CORNER, fill=(255, 255, 255, 180), anchor="ra")
+
+    out_path = output_png_path(item.filename)
+    img.convert("RGB").save(out_path)
+    save_text_file(item.filename, display_text)
 
 
 # =========================================================
-# 링크 목록
+# 메인 로직
 # =========================================================
 
-def write_link_list(items_to_use):
-    REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    output_path = REPORT_DIR / "dplus_links.txt"
+def should_use_special(item: DPlusItem, anniversary_years: int) -> bool:
+    if anniversary_years <= 0:
+        return False
 
-    lines = []
-    lines.append("[D+ 이미지 링크 목록]")
-    lines.append("")
+    if not SPECIAL_ON_ANNIVERSARY:
+        return False
 
-    for item in items_to_use:
-        lines.append(f"{item['title']} : {BASE_URL}/{item['filename']}")
+    if SPECIAL_ONLY_THESE is None:
+        return True
 
-    output_path.write_text("\n".join(lines), encoding="utf-8")
-    print(f"링크 목록 생성 완료: {output_path}")
+    return item.filename in SPECIAL_ONLY_THESE
 
 
-# =========================================================
-# 메인
-# =========================================================
+def make_one(item: DPlusItem, today: date) -> None:
+    anniv_years = get_anniversary_years(item.event_date, today)
 
-def main():
+    if anniv_years > 0:
+        display_text = f"{anniv_years}주년"
+    else:
+        dplus_value = get_dplus(item.event_date, today)
+        display_text = f"D+{dplus_value}"
+
+    if should_use_special(item, anniv_years):
+        render_special_image(item, display_text, anniv_years)
+        print(f"[SPECIAL] {item.filename:<24} -> {display_text}")
+    else:
+        render_normal_image(item, display_text)
+        print(f"[NORMAL ] {item.filename:<24} -> {display_text}")
+
+
+def main() -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
-    today = get_today()
-    items_to_use = filter_items(items)
+    today = today_kst()
+    print(f"today = {today.isoformat()}")
 
-    print(f"오늘(today): {today}")
-    print(f"사용 항목 수: {len(items_to_use)}")
+    for item in ITEMS:
+        make_one(item, today)
 
-    if GENERATE_IMAGES:
-        for item in items_to_use:
-            make_image(item, today)
-
-    if GENERATE_STATUS_REPORT:
-        write_status_report(items_to_use, today)
-
-    if GENERATE_MILESTONE_REPORT:
-        write_milestone_report(items_to_use, today.year)
-
-    if GENERATE_LINK_LIST:
-        write_link_list(items_to_use)
+    print("done.")
 
 
 if __name__ == "__main__":
